@@ -65,6 +65,22 @@ class StrategyService:
     def __init__(self):
         self.indicators = TechnicalIndicators()
     
+    def _get_current_position(self, account_id: int, asset_id: int, db: Session) -> float:
+        from backend.database import Transaction
+        
+        if not account_id:
+            return 0
+        
+        transactions = db.query(Transaction).filter(
+            Transaction.account_id == account_id,
+            Transaction.asset_id == asset_id
+        ).all()
+        
+        total_buy = sum(t.quantity for t in transactions if t.type == "buy")
+        total_sell = sum(t.quantity for t in transactions if t.type == "sell")
+        
+        return total_buy - total_sell
+    
     def _calculate_suggested_quantity(self, signal_type: str, price: float, account_id: int, db: Session) -> int:
         from backend.database import Account, Transaction, Asset
         
@@ -157,6 +173,18 @@ class StrategyService:
                     suggested_qty = self._calculate_suggested_quantity(
                         signal_type, current_price, strategy.account_id, db
                     )
+                    
+                    if signal_type == "buy":
+                        current_position = self._get_current_position(
+                            strategy.account_id, asset.id, db
+                        )
+                        
+                        if current_position >= suggested_qty:
+                            signal_info["signal_type"] = "hold"
+                            signal_info["reason"] = f"[持仓充足] 当前持有{current_position}股，已达到建议数量{suggested_qty}股，无需追加买入。原信号: {signal['reason']}"
+                            logger.info(f"[持仓充足] {asset.symbol}: 当前持有{current_position}股，跳过买入信号")
+                            signals.append(signal_info)
+                            continue
                     
                     db_signal = Signal(
                         strategy_id=strategy.id,
