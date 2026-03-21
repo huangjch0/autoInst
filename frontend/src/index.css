@@ -1,0 +1,64 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f2f5;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.ant-layout {
+  min-height: 100vh;
+}
+
+.site-layout-content {
+  padding: 24px;
+  background: #fff;
+  min-height: 280px;
+}
+
+.dashboard-card {
+  margin-bottom: 16px;
+}
+
+.chart-container {
+  height: 300px;
+}
+
+.profit {
+  color: #52c41a;
+}
+
+.loss {
+  color: #ff4d4f;
+}
+
+.signal-buy {
+  color: #52c41a;
+}
+
+.signal-sell {
+  color: #ff4d4f;
+}
+
+.signal-hold {
+  color: #faad14;
+}
+
+.status-pending {
+  color: #faad14;
+}
+
+.status-approved {
+  color: #52c41a;
+}
+
+.status-rejected {
+  color: #ff4d4f;
+}
