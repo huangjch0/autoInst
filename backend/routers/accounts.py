@@ -8,21 +8,29 @@ from backend.database import get_db, Account, Transaction, Asset, MarketData, Po
 
 router = APIRouter(prefix="/api/accounts", tags=["accounts"])
 
+@router.get("/datasources")
+def get_datasources():
+    from backend.services.market_service import MarketService
+    return MarketService.get_available_datasources()
+
 class AccountCreate(BaseModel):
     name: str
     description: Optional[str] = None
     initial_capital: float = 0
+    datasource: str = "tencent"
 
 class AccountUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     initial_capital: Optional[float] = None
+    datasource: Optional[str] = None
 
 class AccountResponse(BaseModel):
     id: int
     name: str
     description: Optional[str]
     initial_capital: float
+    datasource: str
     created_at: datetime
     updated_at: datetime
     

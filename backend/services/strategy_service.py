@@ -185,6 +185,11 @@ class StrategyService:
                             logger.info(f"[持仓充足] {asset.symbol}: 当前持有{current_position}股，跳过买入信号")
                             signals.append(signal_info)
                             continue
+                        
+                        actual_qty = suggested_qty - current_position
+                        if actual_qty < 100:
+                            actual_qty = ((actual_qty // 100) + 1) * 100
+                        suggested_qty = actual_qty
                     
                     db_signal = Signal(
                         strategy_id=strategy.id,

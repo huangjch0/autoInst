@@ -79,8 +79,8 @@ export const schedulerApi = {
   start: () => api.post('/scheduler/start'),
   stop: () => api.post('/scheduler/stop'),
   runNow: () => api.post('/scheduler/run-now'),
-  config: (dailyTime, intervalMinutes) => api.post('/scheduler/config', null, { 
-    params: { daily_time: dailyTime, interval_minutes: intervalMinutes } 
+  config: (dailyTime, intervalMinutes, datasource) => api.post('/scheduler/config', null, { 
+    params: { daily_time: dailyTime, interval_minutes: intervalMinutes, datasource } 
   })
 }
 

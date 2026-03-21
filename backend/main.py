@@ -93,10 +93,12 @@ def run_update_now():
 @app.post("/api/scheduler/config")
 def config_scheduler(
     daily_time: str = "15:30",
-    interval_minutes: int = 0
+    interval_minutes: int = 0,
+    datasource: str = "tencent"
 ):
     from backend.services.scheduler_service import scheduler
     scheduler.clear_jobs()
+    scheduler.set_datasource(datasource)
     
     if daily_time:
         scheduler.setup_daily_update(daily_time)
@@ -108,6 +110,7 @@ def config_scheduler(
         "message": "调度器配置已更新",
         "daily_time": daily_time,
         "interval_minutes": interval_minutes,
+        "datasource": datasource,
         "status": scheduler.get_status()
     }
 

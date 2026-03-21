@@ -89,11 +89,12 @@ def fetch_and_save_market_data(
     symbol: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    datasource: str = "tencent",
     db: Session = Depends(get_db)
 ):
     try:
         service = MarketService()
-        data = service.fetch_history_data(symbol, start_date, end_date)
+        data = service.fetch_history_data(symbol, start_date, end_date, datasource)
         if not data:
             raise HTTPException(status_code=404, detail="无法获取历史数据")
         
@@ -130,6 +131,7 @@ def fetch_and_save_market_data(
 @router.post("/fetch-all", response_model=BatchUpdateResponse)
 def fetch_all_market_data(
     background_tasks: BackgroundTasks,
+    datasource: str = "tencent",
     db: Session = Depends(get_db)
 ):
     assets = db.query(Asset).all()
@@ -142,7 +144,7 @@ def fetch_all_market_data(
     
     for asset in assets:
         try:
-            data = service.fetch_history_data(asset.symbol)
+            data = service.fetch_history_data(asset.symbol, datasource=datasource)
             if data:
                 saved_count = 0
                 for item in data:

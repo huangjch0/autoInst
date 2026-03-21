@@ -23,13 +23,18 @@ class SchedulerService:
             self.initialized = True
             self.jobs = []
             self.last_run_times = {}
+            self.datasource = "tencent"
+    
+    def set_datasource(self, datasource: str):
+        self.datasource = datasource
+        logger.info(f"数据源已设置为: {datasource}")
     
     def update_all_assets_data(self):
         from backend.database import SessionLocal
         from backend.database import Asset, MarketData
         from backend.services.market_service import MarketService
         
-        logger.info(f"[{datetime.now()}] 开始自动更新所有资产数据...")
+        logger.info(f"[{datetime.now()}] 开始自动更新所有资产数据 (数据源: {self.datasource})...")
         
         db = SessionLocal()
         try:
@@ -45,7 +50,7 @@ class SchedulerService:
             
             for asset in assets:
                 try:
-                    data = service.fetch_history_data(asset.symbol)
+                    data = service.fetch_history_data(asset.symbol, datasource=self.datasource)
                     if data:
                         saved_count = 0
                         for item in data:
@@ -177,6 +182,7 @@ class SchedulerService:
     def get_status(self) -> dict:
         return {
             "running": self._running,
+            "datasource": self.datasource,
             "jobs": [
                 {
                     "job": str(job),

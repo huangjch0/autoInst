@@ -6,12 +6,22 @@ from typing import Optional, List, Dict
 import time
 
 class MarketService:
+    DATASOURCES = {
+        "tencent": "腾讯API",
+        "akshare": "AKShare",
+        "sina": "新浪API"
+    }
+    
     def __init__(self):
         self.cache = {}
         self.cache_time = {}
         self.cache_duration = 300
         self._stock_list_cache = None
         self._stock_list_time = None
+    
+    @classmethod
+    def get_available_datasources(cls):
+        return cls.DATASOURCES
     
     def _get_stock_list(self):
         import akshare as ak
@@ -59,16 +69,29 @@ class MarketService:
             return None
     
     def fetch_history_data(self, symbol: str, start_date: Optional[str] = None, 
-                          end_date: Optional[str] = None) -> List[Dict]:
-        try:
-            return self._fetch_history_data_tencent(symbol, start_date, end_date)
-        except Exception as e:
-            print(f"腾讯API获取失败: {e}, 尝试备用方法...")
+                          end_date: Optional[str] = None, datasource: str = "tencent") -> List[Dict]:
+        datasource_methods = {
+            "tencent": self._fetch_history_data_tencent,
+            "akshare": self._fetch_history_data_akshare,
+            "sina": self._fetch_history_data_sina
+        }
+        
+        if datasource in datasource_methods:
             try:
-                return self._fetch_history_data_akshare(symbol, start_date, end_date)
-            except Exception as e2:
-                print(f"akshare获取失败: {e2}, 尝试新浪API...")
-                return self._fetch_history_data_sina(symbol, start_date, end_date)
+                return datasource_methods[datasource](symbol, start_date, end_date)
+            except Exception as e:
+                print(f"{self.DATASOURCES.get(datasource, datasource)}获取失败: {e}")
+        
+        for ds, method in datasource_methods.items():
+            if ds != datasource:
+                try:
+                    print(f"尝试备用数据源: {self.DATASOURCES.get(ds, ds)}")
+                    return method(symbol, start_date, end_date)
+                except Exception as e:
+                    print(f"{self.DATASOURCES.get(ds, ds)}获取失败: {e}")
+                    continue
+        
+        return []
     
     def _fetch_history_data_tencent(self, symbol: str, start_date: Optional[str] = None, 
                                      end_date: Optional[str] = None) -> List[Dict]:

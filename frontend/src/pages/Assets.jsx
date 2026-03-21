@@ -33,14 +33,17 @@ function Assets() {
   const [schedulerConfig, setSchedulerConfig] = useState({
     enabled: true,
     dailyTime: '15:30',
-    intervalMinutes: 0
+    intervalMinutes: 0,
+    datasource: 'tencent'
   })
+  const [datasources, setDatasources] = useState({})
   const [configForm] = Form.useForm()
 
   useEffect(() => {
     fetchAssets()
     fetchPredictionStrategies()
     fetchSchedulerStatus()
+    fetchDatasources()
   }, [])
 
   const fetchAssets = async () => {
@@ -73,12 +76,23 @@ function Assets() {
     }
   }
 
+  const fetchDatasources = async () => {
+    try {
+      const response = await fetch('/api/accounts/datasources')
+      const data = await response.json()
+      setDatasources(data)
+    } catch (error) {
+      console.error('获取数据源列表失败:', error)
+    }
+  }
+
   const handleOpenSchedulerConfig = async () => {
     await fetchSchedulerStatus()
     configForm.setFieldsValue({
       enabled: schedulerStatus?.running || true,
       dailyTime: dayjs('15:30', 'HH:mm'),
-      intervalMinutes: 0
+      intervalMinutes: 0,
+      datasource: schedulerStatus?.datasource || 'tencent'
     })
     setSchedulerConfigVisible(true)
   }
@@ -89,7 +103,7 @@ function Assets() {
       const dailyTimeStr = values.dailyTime ? values.dailyTime.format('HH:mm') : '15:30'
       
       if (values.enabled) {
-        await schedulerApi.config(dailyTimeStr, values.intervalMinutes)
+        await schedulerApi.config(dailyTimeStr, values.intervalMinutes, values.datasource)
         await schedulerApi.start()
         message.success('自动更新配置已保存并启用')
       } else {
@@ -524,7 +538,7 @@ function Assets() {
           icon={<SettingOutlined />} 
           onClick={handleOpenSchedulerConfig}
         >
-          自动更新: {schedulerStatus?.running ? '已启用' : '已停止'}
+          自动更新: {schedulerStatus?.running ? `已启用 (${datasources[schedulerStatus?.datasource] || schedulerStatus?.datasource || '腾讯API'})` : '已停止'}
         </Button>
       </Space>
 
@@ -608,6 +622,19 @@ function Assets() {
         <Form form={configForm} layout="vertical">
           <Form.Item name="enabled" label="启用自动更新" valuePropName="checked" initialValue={true}>
             <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+          </Form.Item>
+          <Form.Item 
+            name="datasource" 
+            label="数据源" 
+            initialValue="tencent"
+            rules={[{ required: true, message: '请选择数据源' }]}
+            extra="选择获取股票数据的数据源"
+          >
+            <Select placeholder="请选择数据源">
+              {Object.entries(datasources).map(([key, name]) => (
+                <Option key={key} value={key}>{name}</Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item 
             name="dailyTime" 

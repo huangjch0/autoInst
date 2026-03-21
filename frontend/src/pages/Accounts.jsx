@@ -22,10 +22,12 @@ function Accounts() {
   const [accountPerformance, setAccountPerformance] = useState(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [assets, setAssets] = useState([])
+  const [datasources, setDatasources] = useState({})
 
   useEffect(() => {
     fetchAccounts()
     fetchAssets()
+    fetchDatasources()
   }, [])
 
   const fetchAccounts = async () => {
@@ -46,6 +48,16 @@ function Accounts() {
       setAssets(data)
     } catch (error) {
       console.error('获取资产列表失败')
+    }
+  }
+
+  const fetchDatasources = async () => {
+    try {
+      const response = await fetch('/api/accounts/datasources')
+      const data = await response.json()
+      setDatasources(data)
+    } catch (error) {
+      console.error('获取数据源列表失败:', error)
     }
   }
 
@@ -406,6 +418,10 @@ function Accounts() {
                   prefix="¥"
                 />
               </div>
+              <div style={{ marginTop: 8 }}>
+                <span style={{ color: '#666', fontSize: 12 }}>数据源: </span>
+                <Tag color="blue">{datasources[account.datasource] || account.datasource}</Tag>
+              </div>
             </Card>
           </Col>
         ))}
@@ -432,6 +448,19 @@ function Accounts() {
           </Form.Item>
           <Form.Item name="initial_capital" label="初始资金" initialValue={0}>
             <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item 
+            name="datasource" 
+            label="数据源" 
+            initialValue="tencent"
+            rules={[{ required: true, message: '请选择数据源' }]}
+            extra="选择获取股票数据的数据源"
+          >
+            <Select placeholder="请选择数据源">
+              {Object.entries(datasources).map(([key, name]) => (
+                <Option key={key} value={key}>{name}</Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

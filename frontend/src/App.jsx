@@ -42,10 +42,12 @@ function AppLayout() {
   const [loading, setLoading] = useState(true)
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
+  const [datasources, setDatasources] = useState({})
   const [form] = Form.useForm()
 
   useEffect(() => {
     fetchAccounts()
+    fetchDatasources()
   }, [])
 
   useEffect(() => {
@@ -77,6 +79,16 @@ function AppLayout() {
       message.error('获取账户列表失败')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchDatasources = async () => {
+    try {
+      const response = await fetch('/api/accounts/datasources')
+      const data = await response.json()
+      setDatasources(data)
+    } catch (error) {
+      console.error('获取数据源列表失败:', error)
     }
   }
 
@@ -158,6 +170,19 @@ function AppLayout() {
             </Form.Item>
             <Form.Item name="initial_capital" label="初始资金" initialValue={100000}>
               <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item 
+              name="datasource" 
+              label="数据源" 
+              initialValue="tencent"
+              rules={[{ required: true, message: '请选择数据源' }]}
+              extra="选择获取股票数据的数据源"
+            >
+              <Select placeholder="请选择数据源">
+                {Object.entries(datasources).map(([key, name]) => (
+                  <Option key={key} value={key}>{name}</Option>
+                ))}
+              </Select>
             </Form.Item>
           </Form>
         </Modal>
@@ -242,6 +267,19 @@ function AppLayout() {
             </Form.Item>
             <Form.Item name="initial_capital" label="初始资金" initialValue={100000}>
               <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item 
+              name="datasource" 
+              label="数据源" 
+              initialValue="tencent"
+              rules={[{ required: true, message: '请选择数据源' }]}
+              extra="选择获取股票数据的数据源"
+            >
+              <Select placeholder="请选择数据源">
+                {Object.entries(datasources).map(([key, name]) => (
+                  <Option key={key} value={key}>{name}</Option>
+                ))}
+              </Select>
             </Form.Item>
           </Form>
         </Modal>

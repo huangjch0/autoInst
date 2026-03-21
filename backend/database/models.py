@@ -12,6 +12,7 @@ class Account(Base):
     name = Column(String(100), nullable=False)
     description = Column(Text)
     initial_capital = Column(Float, default=0)
+    datasource = Column(String(20), default="tencent")
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     
